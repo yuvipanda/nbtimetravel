@@ -10,5 +10,6 @@ setuptools.setup(
     data_files=[
         ('share/jupyter/nbextensions/nbhistory', glob('*.js'))
     ],
+    package_data={'nbtimetravel': ['static/*']},
     packages=setuptools.find_packages()
 )
