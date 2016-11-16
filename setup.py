@@ -8,7 +8,8 @@ setuptools.setup(
     author="Yuvi Panda",
     description="Jupyter Notebook extension to provide per-cell history recording & replaying",
     data_files=[
-        ('share/jupyter/nbextensions/nbhistory', glob('*.js'))
+        ('share/jupyter/nbextensions/nbtimetravel', glob('*.js'))
     ],
-    packages=setuptools.find_packages()
+    packages=setuptools.find_packages(),
+    package_data={'nbtimetravel': ['static/*']},
 )
