@@ -23,7 +23,7 @@ define([
             response: {
                 version: msg.header.version,
                 msg_type: msg.msg_type,
-                content: msg.content,
+                content: None,
                 metadata: msg.metadata
             }
         });
