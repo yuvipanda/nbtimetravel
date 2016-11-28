@@ -12,18 +12,24 @@ define([
   // compatible ways.
   var timetravelVersion = '1.0';
 
-  // Add some metadata to the notebook itself
-  // Disable the extension by default so that only notebooks that have been tested to
-  // not get too big will record history. This should eventually be replaced
-  // with a size limit on the history, but this will do for now.
-  //
-  // TODO: Replace with a size limit on history
+  // Initialize timetravel metadata if needed
   Jupyter.notebook.metadata.timetravel = (
     Jupyter.notebook.metadata.timetravel || {});
+
+  // Add some metadata to the notebook itself.
   var timetravelMeta = Jupyter.notebook.metadata.timetravel;
   _.defaults(timetravelMeta, {
+    // Disable the extension by default
     enabled: false,
+
+    // Version the history format
     version: timetravelVersion,
+
+    // Only these content types will be recorded in the history. Used to
+    // prevent huge notebooks from saving plots.
+    allowedContentTypes: [
+      'text/plain',
+    ],
   });
 
   function indicatorToMsg() {
@@ -39,23 +45,21 @@ define([
   }
 
   function createButton() {
-      var msg = indicatorToMsg();
-      $('#maintoolbar-container').append(
-        $('<div>').addClass('btn-group').addClass('pull-right')
-          .append($('<button>')
-            .attr('id', 'nbtimetravel-button')
-            .addClass('btn')
-            .addClass('btn-default')
-            .append(
-              $('<strong>').text('TimeTravel: '))
-            .append(
-              $('<span>').attr('id', 'nbTimeTravelIndicator')
-                         .attr('title', 'Indicates whether or not timetravel is active.')
-
-            )
+    $('#maintoolbar-container').append(
+      $('<div>').addClass('btn-group').addClass('pull-right')
+        .append($('<button>')
+          .attr('id', 'nbtimetravel-button')
+          .addClass('btn')
+          .addClass('btn-default')
+          .append(
+            $('<strong>').text('TimeTravel: '))
+          .append(
+            $('<span>').attr('id', 'nbTimeTravelIndicator')
+                       .attr('title', 'Indicates whether or not timetravel is active.')
           )
-      );
-    }
+        )
+    );
+  }
 
   // No event for this, so we monkeypatch!
   // MONKEY SEE, MONKEY PATCH!
@@ -65,6 +69,12 @@ define([
       if (!this.cell.metadata.history) {
         this.cell.metadata.history = [];
       }
+
+      // Only record whitelisted content types
+      var recordedContent = _.clone(msg.content);
+      recordedContent.data = _.pick(msg.content.data,
+                                    timetravelMeta.allowedContentTypes);
+
       this.cell.metadata.history.push({
         // Record dates clientside, rather than serverside.
         // This lets us consistently use the same time source in *most*
@@ -76,20 +86,21 @@ define([
         response: {
           version: msg.header.version,
           msg_type: msg.msg_type,
-          content: msg.content,
+          content: recordedContent,
           metadata: msg.metadata,
         }
       });
     }
 
     return this._handle_output(msg);
-
   };
 
 
   var load_ipython_extension = function () {
+    // Initialize button toggle
     createButton();
     displayMsg();
+
     events.on('execute.CodeCell', function(ev, payload){
       // Output area objects don't know what cells they belong to!
       // We use this to tell them
