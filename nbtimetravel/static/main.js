@@ -19,7 +19,7 @@ define([
   //
   // TODO: Replace with a size limit on history
   Jupyter.notebook.metadata.timetravel = (
-    Jupyter.notebook.metadata.timetravel || {})
+    Jupyter.notebook.metadata.timetravel || {});
   var timetravelMeta = Jupyter.notebook.metadata.timetravel;
   _.defaults(timetravelMeta, {
     enabled: false,
@@ -77,7 +77,7 @@ define([
           version: msg.header.version,
           msg_type: msg.msg_type,
           content: msg.content,
-          metadata: msg.metadata
+          metadata: msg.metadata,
         }
       });
     }
@@ -101,10 +101,9 @@ define([
     });
 
     $('#nbtimetravel-button').on('click', function() {
-      timetravelMeta.enabled = !timetravelMeta.enabled
+      timetravelMeta.enabled = !timetravelMeta.enabled;
       displayMsg();
-    })
-
+    });
   };
 
   return {
