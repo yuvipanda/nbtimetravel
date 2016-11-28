@@ -9,36 +9,38 @@ define([
   // compatible ways.
   var timetravelVersion = '1.0';
 
-  // No event for this, so we monkeypatch!
-  // MONKEY SEE, MONKEY PATCH!
-  oa.OutputArea.prototype._handle_output = oa.OutputArea.prototype.handle_output;
-  oa.OutputArea.prototype.handle_output = function (msg) {
-    if (!this.cell.metadata.history) {
-      this.cell.metadata.history = [];
-    }
-    this.cell.metadata.history.push({
-      // Record dates clientside, rather than serverside.
-      // This lets us consistently use the same time source in *most*
-      // cases.
-      timestamp: (new Date()).toISOString(),
-      code: this.cell.get_text(),
-      // We record the responses that're required to recreate the state
-      // in the OutputArea object.
-      response: {
-        version: msg.header.version,
-        msg_type: msg.msg_type,
-        content: msg.content,
-        metadata: msg.metadata
+  var setupHistoryRecorder = function () {
+    // No event for this, so we monkeypatch!
+    // MONKEY SEE, MONKEY PATCH!
+    oa.OutputArea.prototype._handle_output = oa.OutputArea.prototype.handle_output;
+    oa.OutputArea.prototype.handle_output = function (msg) {
+      if (!this.cell.metadata.history) {
+        this.cell.metadata.history = [];
       }
-    });
+      this.cell.metadata.history.push({
+        // Record dates clientside, rather than serverside.
+        // This lets us consistently use the same time source in *most*
+        // cases.
+        timestamp: (new Date()).toISOString(),
+        code: this.cell.get_text(),
+        // We record the responses that're required to recreate the state
+        // in the OutputArea object.
+        response: {
+          version: msg.header.version,
+          msg_type: msg.msg_type,
+          content: msg.content,
+          metadata: msg.metadata
+        }
+      });
 
-    return this._handle_output(msg);
-  };
+      return this._handle_output(msg);
+    };
+  }
 
   var load_ipython_extension = function () {
     // This extension is only enabled for notebooks that have explicitly set a
     //
-    // timetravel: { enabled: true }
+    // "timetravel": { "enabled": true }
     //
     // in the notebook metadata so that only notebooks that have been tested to
     // not get too big will record history. This should eventually be replaced
@@ -64,6 +66,8 @@ define([
         // monkeypatch fromJSON, so this is what we gotta do.
         payload.cell.output_area.cell = payload.cell;
       });
+
+      setupHistoryRecorder();
     }
 
     // This allows us to incrementally upgrade our format in the future
