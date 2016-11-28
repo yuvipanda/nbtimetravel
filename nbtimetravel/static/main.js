@@ -26,7 +26,7 @@ define([
     version: timetravelVersion,
 
     // Only these content types will be recorded in the history. Used to
-    // prevent huge notebooks from saving plots.
+    // prevent file size growth from recording plots.
     allowedContentTypes: [
       'text/plain',
     ],
