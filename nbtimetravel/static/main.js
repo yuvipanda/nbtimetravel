@@ -1,15 +1,33 @@
 define([
   'jquery',
+  'underscore',
   'base/js/namespace',
   'notebook/js/outputarea',
   'base/js/events',
 ], function (
-  $, Jupyter, oa, events
+  $, _, Jupyter, oa, events
 ) {
-  isOn = false;
+
+  // Version of the extension. Allows us to upgrade the format in backwards
+  // compatible ways.
+  var timetravelVersion = '1.0';
+
+  // Add some metadata to the notebook itself
+  // Disable the extension by default so that only notebooks that have been tested to
+  // not get too big will record history. This should eventually be replaced
+  // with a size limit on the history, but this will do for now.
+  //
+  // TODO: Replace with a size limit on history
+  Jupyter.notebook.metadata.timetravel = (
+    Jupyter.notebook.metadata.timetravel || {})
+  var timetravelMeta = Jupyter.notebook.metadata.timetravel;
+  _.defaults(timetravelMeta, {
+    enabled: false,
+    version: timetravelVersion,
+  });
 
   function indicatorToMsg() {
-    if (isOn) {
+    if (timetravelMeta.enabled) {
       return 'On';
     } else {
       return 'Off';
@@ -33,7 +51,7 @@ define([
             .append(
               $('<span>').attr('id', 'nbTimeTravelIndicator')
                          .attr('title', 'Indicates whether or not timetravel is active.')
-                        
+
             )
           )
       );
@@ -43,7 +61,7 @@ define([
   // MONKEY SEE, MONKEY PATCH!
   oa.OutputArea.prototype._handle_output = oa.OutputArea.prototype.handle_output;
   oa.OutputArea.prototype.handle_output = function (msg) {
-    if (isOn) {
+    if (timetravelMeta.enabled) {
       if (!this.cell.metadata.history) {
         this.cell.metadata.history = [];
       }
@@ -65,7 +83,9 @@ define([
     }
 
     return this._handle_output(msg);
+
   };
+
 
   var load_ipython_extension = function () {
     createButton();
@@ -80,15 +100,8 @@ define([
       payload.cell.output_area.cell = payload.cell;
     });
 
-    // Add some metadata to the notebook itself
-    // This allows us to incrementally upgrade our format in the future
-    // in backwards compatible ways
-    Jupyter.notebook.metadata.timetravel = {
-      'version': '1.0' // Data structure version
-    };
-
     $('#nbtimetravel-button').on('click', function() {
-      isOn = !isOn;
+      timetravelMeta.enabled = !timetravelMeta.enabled
       displayMsg();
     })
 
@@ -97,4 +110,5 @@ define([
   return {
     load_ipython_extension: load_ipython_extension,
   };
+
 });
