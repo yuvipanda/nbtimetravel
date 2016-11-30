@@ -11,26 +11,7 @@ define([
   // Version of the extension. Allows us to upgrade the format in backwards
   // compatible ways.
   var timetravelVersion = '1.0';
-
-  // Initialize timetravel metadata if needed
-  Jupyter.notebook.metadata.timetravel = (
-    Jupyter.notebook.metadata.timetravel || {});
-
-  // Add some metadata to the notebook itself.
-  var timetravelMeta = Jupyter.notebook.metadata.timetravel;
-  _.defaults(timetravelMeta, {
-    // Disable the extension by default
-    enabled: false,
-
-    // Version the history format
-    version: timetravelVersion,
-
-    // Only these content types will be recorded in the history. Used to
-    // prevent file size growth from recording plots.
-    allowedContentTypes: [
-      'text/plain',
-    ],
-  });
+  var timetravelMeta;
 
   function indicatorToMsg() {
     if (timetravelMeta.enabled) {
@@ -97,6 +78,26 @@ define([
 
 
   var load_ipython_extension = function () {
+    // Initialize timetravel metadata if needed
+    Jupyter.notebook.metadata.timetravel = (
+      Jupyter.notebook.metadata.timetravel || {});
+
+    // Add some metadata to the notebook itself.
+    timetravelMeta = Jupyter.notebook.metadata.timetravel;
+    _.defaults(timetravelMeta, {
+      // Disable the extension by default
+      enabled: false,
+
+      // Version the history format
+      version: timetravelVersion,
+
+      // Only these content types will be recorded in the history. Used to
+      // prevent file size growth from recording plots.
+      allowedContentTypes: [
+        'text/plain',
+      ],
+    });
+
     // Initialize button toggle
     createButton();
     displayMsg();
