@@ -53,7 +53,7 @@ define([
 
       // Only record whitelisted content types
       var recordedContent = _.clone(msg.content);
-      recordedContent.data = _.pick(msg.content.data,
+      recordedContent.data = _.pick(msg.content.data || {},
                                     timetravelMeta.allowedContentTypes);
 
       this.cell.metadata.history.push({
