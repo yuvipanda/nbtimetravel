@@ -31,8 +31,8 @@ pip install git+https://github.com/yuvipanda/nbtimetravel.git
 Then you can install & enable the extension
 
 ```
-jupyter nbextension install --user --py nbtimetravel
-jupyter nbextension enable --user --py nbtimetravel
+jupyter nbextension install --sys-prefix --py nbtimetravel
+jupyter nbextension enable --sys-prefix --py nbtimetravel
 ```
 
-This installs it for the current user. You can use `--system` to install it systemwide (needs `root`) too.
+This installs it for the current virtual environment. You can use `--system` to install it systemwide (needs `root`) too.
